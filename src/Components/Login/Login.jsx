@@ -1,0 +1,218 @@
+import React, { useContext, useState } from "react";
+import {
+  Container,
+  TextField,
+  Button,
+  Typography,
+  Box,
+  Grid,
+  Link,
+  Paper,
+  FormControlLabel,
+  Checkbox,
+  Snackbar,
+  RadioGroup,
+  Radio,
+  Alert,
+} from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import assetimg from "../../assets/images/Login.png";
+import logo from "../../assets/images/logo.png";
+import { apiPost } from "../../api/apiMethods";
+import { useUser } from "../../Context/UserContext";
+
+const ADMIN_API_ENDPOINT = `api/auth/admin_login`;
+const VENDOR_API_ENDPOINT = `api/vendor-login`;
+
+const Login = () => {
+  const navigate = useNavigate();
+  const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const { initializeUser } = useUser();
+  const [loginType, setLoginType] = useState("admin");
+  const [identifier, setIdentifier] = useState("");
+    const { setUser } = useUser();
+
+  const handleLogin = async (event) => {
+    event.preventDefault(); // Prevent the default form submission behavior
+
+    try {
+      const API_ENDPOINT = loginType === "admin" ? ADMIN_API_ENDPOINT : VENDOR_API_ENDPOINT;
+      const payload = loginType === "admin" ? { email: identifier, password } : { username: identifier, password };
+      
+      const response = await apiPost(API_ENDPOINT, payload);
+      const { accessToken, refreshToken, userData } = response?.data;
+      const { vendorData } = response?.data;
+      if (vendorData?.role === "vendor") setUser(vendorData);
+    
+      if (userData?.role === "admin" || vendorData?.role === 'vendor' || userData?.role === 'super-admin') {
+        if (accessToken || vendorData.token) {
+          sessionStorage.setItem("accessToken", accessToken || vendorData.token);
+          sessionStorage.setItem("refreshToken", refreshToken || vendorData.token);
+          const expirationTime = new Date().getTime() + (rememberMe ? 24 : 1) * 60 * 60 * 1000;
+          sessionStorage.setItem("expirationTime", expirationTime);
+          setSnackbarMessage("Login successful!");
+          setOpenSnackbar(true);
+          setTimeout(() => {
+            navigate("/");
+            initializeUser();
+          }, 2000);
+        } else {
+          throw new Error("Access token or refresh token is missing.");
+        }
+      } else {
+        setSnackbarMessage("Login failed. Only admin can log in.");
+        setOpenSnackbar(true);
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      setSnackbarMessage("Login failed. Please try again.");
+      setOpenSnackbar(true);
+    }
+  };
+
+  const handleCloseSnackbar = () => setOpenSnackbar(false);
+
+  return (
+    <div
+      style={{
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "100vh",
+        }}
+      >
+        <Container
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
+              justifyContent: "center",
+              alignItems: "center",
+              width: "100%",
+            }}
+          >
+            {/* Left side image */}
+            <Box
+              sx={{
+                flex: 1,
+                display: { xs: "none", sm: "flex" },
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <img
+                src={assetimg}
+                alt="Login"
+                style={{
+                  width: "100%",
+                  height: "auto",
+                }}
+              />
+            </Box>
+
+            {/* Right side form */}
+            <Box
+              sx={{
+                flex: 1,
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                padding: { xs: 2, sm: 0 },
+              }}
+            >                  
+             
+              <Paper
+                elevation={3}
+                sx={{
+                  padding: 4,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  backgroundColor: "rgba(255, 255, 255, 0.5)",
+                  borderRadius: 2,
+                  width: "100%",
+                  maxWidth: "400px",
+                }}
+              >
+                <Typography
+                  component="h1"
+                  variant="h4"
+                  gutterBottom
+                  sx={{ fontWeight: 700, marginTop: "0px" }}
+                >
+                  Panel
+                </Typography>
+                <Typography component="h1" variant="h5" gutterBottom>
+                  Log In
+                </Typography>
+                <Box component="form" onSubmit={handleLogin} sx={{ width: "100%" }}>
+                  <RadioGroup row value={loginType} onChange={(e) => setLoginType(e.target.value)}>
+                    <FormControlLabel value="admin" control={<Radio />} label="Admin" />
+                    <FormControlLabel value="vendor" control={<Radio />} label="Vendor" />
+                  </RadioGroup>
+                  <TextField
+                    margin="normal"
+                    fullWidth
+                    label={loginType === "admin" ? "Email Id" : "Username"}
+                    autoComplete={loginType === "admin" ? "email" : "username"}
+                    value={identifier}
+                    onChange={(e) => setIdentifier(e.target.value)}
+                    required
+                  />
+                  <TextField
+                    margin="normal"
+                    fullWidth
+                    name="password"
+                    label="Password"
+                    type="password"
+                    autoComplete="current-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  <Button type="submit" fullWidth variant="contained" color="primary" sx={{ mt: 3, mb: 2 }}>
+                    Sign In
+                  </Button>
+                </Box>
+              </Paper>
+            </Box>
+          </Box>
+        </Container>
+        <Snackbar
+          open={openSnackbar}
+          autoHideDuration={6000}
+          onClose={handleCloseSnackbar}
+          anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        >
+          <Alert
+            onClose={handleCloseSnackbar}
+            severity={snackbarMessage.includes("failed") ? "error" : "success"}
+            sx={{ width: "100%" }}
+          >
+            {snackbarMessage}
+          </Alert>
+        </Snackbar>
+      </Box>
+    </div>
+  );
+};
+
+export default Login;
+
