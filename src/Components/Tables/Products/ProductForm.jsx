@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Dialog, Checkbox, FormControlLabel, DialogActions, DialogContent, DialogTitle, Button, TextField, Grid, Snackbar, SnackbarContent, MenuItem, Select, InputLabel, FormControl, IconButton } from '@mui/material';
-import { apiPost, apiPut, apiGet } from '../../../api/apiMethods'; // Ensure you have apiPost, apiPut, and apiGet set up
+import { apiPost, apiPut } from '../../../api/apiMethods';
 import { EditNoteOutlined } from '@mui/icons-material';
 import { useUser } from '../../../Context/UserContext';
 
@@ -10,23 +10,22 @@ const ProductForm = ({ dataHandler, initialData, websites, addCategory }) => {
   const [description, setDescription] = useState('');
   const [images, setImages] = useState('');
   const [price, setPrice] = useState(0);
-  const [size, setSize] = useState('M');
+  const [technologies, setTechnologies] = useState([]);
   const [discount, setDiscount] = useState(0);
   const [referenceWebsite, setReferenceWebsite] = useState('');
   const [category, setCategory] = useState('');
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
-  // const [categories, setCategories] = useState([]);
   const { user, categories, setCategories } = useUser();
 
   useEffect(() => {
     if (initialData) {
       setProductName(initialData?.productName || '');
-      setDescription(initialData.description || '');
-      setImages(initialData.images?.join(', ') || '');
+      setDescription(initialData?.description || '');
+      setImages(initialData?.images?.join(', ') || '');
       setPrice(initialData?.price || 0);
-      setSize(initialData?.size || 'M');
+      setTechnologies(initialData?.technologies || []);
       setDiscount(initialData?.discount || 0);
       setReferenceWebsite(initialData?.referenceWebsite || '');
       setCategory(initialData?.category?._id || '');
@@ -37,36 +36,23 @@ const ProductForm = ({ dataHandler, initialData, websites, addCategory }) => {
 
   useEffect(() => {
     if (user) {
-      setReferenceWebsite(user.referenceWebsite)
+      setReferenceWebsite(user.referenceWebsite);
     }
-  }, [user])
+  }, [user]);
 
   const resetForm = () => {
     setProductName('');
     setDescription('');
     setImages('');
     setPrice(0);
-    setSize('M');
+    setTechnologies([]);
     setDiscount(0);
     setReferenceWebsite('');
     setCategory('');
   };
 
-  useEffect(() => {
-    if (referenceWebsite) {
-      const matchedWebsite = websites.find((website) => website._id === referenceWebsite);
-      if (matchedWebsite) {
-        // setCategories(matchedWebsite.categories || []);
-      } else {
-        // setCategories([]);
-      }
-    } else {
-      // setCategories([]);
-    }
-  }, [referenceWebsite, websites]);
-
   const handleSubmit = async () => {
-    if ((!addCategory && (!productName || !description || !images || !price || !referenceWebsite || !category)) || addCategory && !productName) {
+    if ((!addCategory && (!productName || !description || !images || !price || !referenceWebsite || !category)) || (addCategory && !productName)) {
       setSnackbarMessage('Please fill all required fields');
       setSnackbarSeverity('error');
       setSnackbarOpen(true);
@@ -79,7 +65,7 @@ const ProductForm = ({ dataHandler, initialData, websites, addCategory }) => {
       images: images.split(',').map((img) => img.trim()),
       price,
       actualPrice: (price * (100 - discount) / 100).toFixed(2),
-      size,
+      technologies,
       discount,
       referenceWebsite,
       category,
@@ -87,15 +73,16 @@ const ProductForm = ({ dataHandler, initialData, websites, addCategory }) => {
 
     const newCategory = {
       name: productName,
-      referenceWebsite: import.meta.env.VITE_API_REFERENCE_WEBSITE
-    }
+      referenceWebsite: import.meta.env.VITE_API_REFERENCE_WEBSITE,
+    };
+
     if (addCategory) {
       try {
         const { data } = await apiPost('api/categories', newCategory);
         setCategories(prevCategories => [...prevCategories, data.category]);
         handleClose();
       } catch (error) {
-        console.log(error.message)
+        console.log(error.message);
       }
       return;
     }
@@ -104,7 +91,7 @@ const ProductForm = ({ dataHandler, initialData, websites, addCategory }) => {
       const response = initialData
         ? await apiPut(`api/product/products/${initialData._id}`, newProduct)
         : await apiPost('api/product/createproduct', newProduct);
-      console.log(response)
+
       if (response.status === 200) {
         setSnackbarMessage('Product saved successfully');
         setSnackbarSeverity('success');
@@ -136,15 +123,17 @@ const ProductForm = ({ dataHandler, initialData, websites, addCategory }) => {
         <IconButton onClick={handleClickOpen}>
           <EditNoteOutlined />
         </IconButton>
-      ) : user && (user.role === 'admin' || user.role === 'vendor') ? !addCategory ? (
-        <Button variant="contained" color="primary" onClick={handleClickOpen}>
-          New Product
-        </Button>
-      ) :
-        <Button variant="contained" color="primary" onClick={handleClickOpen}>
-          Add Category
-        </Button>
-        : null}
+      ) : user && (user.role === 'admin' || user.role === 'vendor') ? (
+        !addCategory ? (
+          <Button variant="contained" color="primary" onClick={handleClickOpen}>
+            New Product
+          </Button>
+        ) : (
+          <Button variant="contained" color="primary" onClick={handleClickOpen}>
+            Add Category
+          </Button>
+        )
+      ) : null}
 
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>{initialData ? 'Update Product' : addCategory ? 'Add Category' : 'New Product'}</DialogTitle>
@@ -153,7 +142,7 @@ const ProductForm = ({ dataHandler, initialData, websites, addCategory }) => {
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label={addCategory ? "Add category" : "Product Name"}
+                label={addCategory ? 'Add category' : 'Product Name'}
                 variant="outlined"
                 required
                 value={productName}
@@ -161,94 +150,87 @@ const ProductForm = ({ dataHandler, initialData, websites, addCategory }) => {
                 onChange={(e) => setProductName(e.target.value)}
               />
             </Grid>
-            {!addCategory && <>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Description"
-                  variant="outlined"
-                  required={!addCategory}
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Images (comma-separated)"
-                  variant="outlined"
-                  required={!addCategory}
-                  value={images}
-                  onChange={(e) => setImages(e.target.value)}
-                />
-              </Grid>
-              <Grid item xs={6}>
-                <TextField
-                  fullWidth
-                  label="Price"
-                  variant="outlined"
-                  type="number"
-                  required={!addCategory}
-                  value={price}
-                  onChange={(e) => setPrice(Number(e.target.value))}
-                />
-              </Grid>
-              <Grid item xs={6}>
-                <FormControl fullWidth>
-                  <InputLabel>Size</InputLabel>
-                  <Select value={size} onChange={(e) => setSize(e.target.value)}>
-                    {['S', 'M', 'L', 'XL', 'XXL'].map((sizeOption) => (
-                      <MenuItem key={sizeOption} value={sizeOption}>
-                        {sizeOption}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Discount (%)"
-                  variant="outlined"
-                  type="number"
-                  value={discount}
-                  onChange={(e) => setDiscount(Number(e.target.value))}
-                />
-              </Grid>
 
-              {/* <Grid item xs={12}>
-              <FormControl fullWidth>
-                <InputLabel>Reference Website</InputLabel>
-                <Select
-                  value={referenceWebsite}
-                  defaultValue=''
-                  onChange={(e) => setReferenceWebsite(e.target.value)}
-                >
-                  {websites.map((site) => (
-                    <MenuItem key={site._id} value={site._id}>
-                      {site.websiteName}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid> */}
-              <Grid item xs={12}>
-                <FormControl fullWidth>
-                  <InputLabel>Category</InputLabel>
-                  <Select
-                    value={category}
-                    defaultValue=''
-                    onChange={(e) => setCategory(e.target.value)}
-                  >
-                    {categories.map((cat) => (
-                      <MenuItem key={cat._id} value={cat._id}>
-                        {cat.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-            </>}
+            {!addCategory && (
+              <>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Description"
+                    variant="outlined"
+                    required
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Images (comma-separated)"
+                    variant="outlined"
+                    required
+                    value={images}
+                    onChange={(e) => setImages(e.target.value)}
+                  />
+                </Grid>
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    label="Price"
+                    variant="outlined"
+                    type="number"
+                    required
+                    value={price}
+                    onChange={(e) => setPrice(Number(e.target.value))}
+                  />
+                </Grid>
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    label="Discount (%)"
+                    variant="outlined"
+                    type="number"
+                    value={discount}
+                    onChange={(e) => setDiscount(Number(e.target.value))}
+                  />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <FormControl fullWidth>
+                    <InputLabel>Technologies</InputLabel>
+                    <Select
+                      multiple
+                      value={technologies}
+                      onChange={(e) => setTechnologies(e.target.value)}
+                      renderValue={(selected) => selected.join(', ')}
+                    >
+                      {['React', 'Node.js', 'MongoDB', 'Express', 'Next.js', 'TypeScript'].map((tech) => (
+                        <MenuItem key={tech} value={tech}>
+                          <Checkbox checked={technologies.indexOf(tech) > -1} />
+                          {tech}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                <Grid item xs={12}>
+                  <FormControl fullWidth>
+                    <InputLabel>Category</InputLabel>
+                    <Select
+                      value={category}
+                      onChange={(e) => setCategory(e.target.value)}
+                    >
+                      {categories.map((cat) => (
+                        <MenuItem key={cat._id} value={cat._id}>
+                          {cat.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+              </>
+            )}
           </Grid>
         </DialogContent>
         <DialogActions>

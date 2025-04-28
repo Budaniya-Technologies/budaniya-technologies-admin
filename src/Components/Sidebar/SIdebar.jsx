@@ -257,14 +257,14 @@ function Sidebar() {
           className="sider"
         >
           <div className="fixed-logo" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            {!imageError ? (
+           
   <img
-    src={logoURL}
+   src={logoURL || logo}
     alt="logo"
     style={{ width: collapsed ? '60px' : '150px', marginTop: '15%' }}
     onError={() => setImageError(true)}
   />
-) : (
+{/* ) : (
   <div style={{ width: collapsed ? '60px' : '150px', marginTop: '15%' }}>
     <img
               src={logo}
@@ -272,7 +272,7 @@ function Sidebar() {
               style={{ width: collapsed ? '60px' : '150px', marginTop: '15%' }}
             />
   </div>
-)}
+)} */}
 
           </div>
 
