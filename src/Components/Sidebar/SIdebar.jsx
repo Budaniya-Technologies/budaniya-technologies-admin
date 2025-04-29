@@ -335,7 +335,7 @@ function Sidebar() {
           <Content
             style={{
               margin: '14px 20px 24px 16px',
-              padding: '14px 24px 24px 24px',
+              padding: '0px 24px 24px 24px',
               minHeight: '87vh',
               background: 'var(--bg-color)',
               borderRadius: borderRadiusLG,

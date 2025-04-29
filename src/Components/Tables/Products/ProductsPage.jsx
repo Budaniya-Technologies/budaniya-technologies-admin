@@ -100,18 +100,6 @@ const [maxPrice, setMaxPrice] = useState('');
         }
     }, [user])
 
-    // useEffect(() => {
-    //     if (filterWebsite) {
-    //         const matchedWebsite = websites.find((website) => website._id === filterWebsite);
-    //         if (matchedWebsite) {
-    //             setCategories(matchedWebsite.categories || []);
-    //         } else {
-    //             setCategories([]);
-    //         }
-    //     } else {
-    //         setCategories([]);
-    //     }
-    // }, [filterWebsite, websites]);
 
     useEffect(() => {
         if (filterWebsite) {
