@@ -23,43 +23,34 @@ const ProductForm = ({ dataHandler, initialData, websites, addCategory }) => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+
   const { user, categories, setCategories } = useUser();
 
   useEffect(() => {
     if (initialData) {
-      setProductName(initialData?.productName || '');
-      setDescription(initialData?.description || '');
-      setImages(initialData?.images?.join(', ') || '');
-      setPrice(initialData?.price || 0);
-      setTechnologies(initialData?.technologies || []);
-      setDiscount(initialData?.discount || 0);
-      setReferenceWebsite(initialData?.referenceWebsite || '');
-      setCategory(initialData?.category?._id || '');
-      setSubCategory(initialData?.subcat || '');
+      setProductName(initialData.productName || '');
+      setDescription(initialData.description || '');
+      setImages(initialData.images?.join(', ') || '');
+      setPrice(initialData.price || 0);
+      setTechnologies(initialData.technologies || []);
+      setDiscount(initialData.discount || 0);
+      setReferenceWebsite(initialData.referenceWebsite || '');
+      setCategory(initialData?.category?._id || initialData?.category || '');
+      setSubCategory(
+        typeof initialData?.subcat === 'object'
+          ? initialData?.subcat?._id
+          : initialData?.subcat || ''
+      );
     } else {
       resetForm();
     }
   }, [initialData]);
 
   useEffect(() => {
-    if (user) {
-      setReferenceWebsite(user.referenceWebsite || '');
+    if (user?.referenceWebsite) {
+      setReferenceWebsite(user.referenceWebsite);
     }
   }, [user]);
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const { data } = await apiGet('api/categories');
-        if (Array.isArray(data)) {
-          setCategories(data);
-        }
-      } catch (error) {
-        console.error('Error fetching categories:', error.message);
-      }
-    };
-    fetchCategories();
-  }, []);
 
   const resetForm = () => {
     setProductName('');
@@ -75,7 +66,10 @@ const ProductForm = ({ dataHandler, initialData, websites, addCategory }) => {
   };
 
   const handleSubmit = async () => {
-    if ((!addCategory && (!productName || !description || !images || !price || !referenceWebsite || !category)) || (addCategory && !productName)) {
+    const missingFields = !addCategory &&
+      (!productName || !description || !images || !price || !referenceWebsite || !category);
+
+    if ((missingFields) || (addCategory && !productName)) {
       setSnackbarMessage('Please fill all required fields');
       setSnackbarSeverity('error');
       setSnackbarOpen(true);
@@ -102,33 +96,31 @@ const ProductForm = ({ dataHandler, initialData, websites, addCategory }) => {
       referenceWebsite: import.meta.env.VITE_API_REFERENCE_WEBSITE,
     };
 
-    if (addCategory) {
-      try {
+    try {
+      if (addCategory) {
         const { data } = await apiPost('api/categories', newCategory);
         setCategories((prev) => [...prev, data.category]);
-        handleClose();
-      } catch (error) {
-        console.error('Error creating category:', error.message);
-      }
-      return;
-    }
+        setSnackbarMessage('Category created successfully');
+        resetForm(); 
+      } else {
+        const response = initialData
+          ? await apiPut(`api/product/products/${initialData._id}`, newProduct)
+          : await apiPost('api/product/createproduct', newProduct);
 
-    try {
-      const response = initialData
-        ? await apiPut(`api/product/products/${initialData._id}`, newProduct)
-        : await apiPost('api/product/createproduct', newProduct);
-
-      if (response.status === 200) {
-        setSnackbarMessage('Product saved successfully');
-        setSnackbarSeverity('success');
-        setOpen(false);
-        dataHandler();
+        if (response.status === 200) {
+          setSnackbarMessage('Product saved successfully');
+          dataHandler();
+        }
       }
+
+      setSnackbarSeverity('success');
+      handleClose();
     } catch (error) {
-      setSnackbarMessage('Failed to save product');
+      setSnackbarMessage('Failed to save data');
       setSnackbarSeverity('error');
+    } finally {
+      setSnackbarOpen(true);
     }
-    setSnackbarOpen(true);
   };
 
   const handleClickOpen = () => setOpen(true);
@@ -141,20 +133,20 @@ const ProductForm = ({ dataHandler, initialData, websites, addCategory }) => {
         <IconButton onClick={handleClickOpen}>
           <EditNoteOutlined />
         </IconButton>
-      ) : user && (user.role === 'admin' || user.role === 'vendor') ? (
-        <Button variant="contained" color="primary" onClick={handleClickOpen}>
+      ) : user && ['admin', 'vendor'].includes(user.role) ? (
+        <Button variant="contained" onClick={handleClickOpen}>
           {addCategory ? 'Add Category' : 'New Product'}
         </Button>
       ) : null}
 
-      <Dialog open={open} onClose={handleClose}>
+      <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md">
         <DialogTitle>{initialData ? 'Update Product' : addCategory ? 'Add Category' : 'New Product'}</DialogTitle>
         <DialogContent>
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label={addCategory ? 'Add category' : 'Product Name'}
+                label={addCategory ? 'Category Name' : 'Product Name'}
                 variant="outlined"
                 required
                 value={productName}
@@ -162,72 +154,66 @@ const ProductForm = ({ dataHandler, initialData, websites, addCategory }) => {
               />
             </Grid>
 
-            {addCategory && (
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Category Description"
-                  variant="outlined"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                />
-              </Grid>
-            )}
+            {addCategory ? (
+              <>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Category Description"
+                    variant="outlined"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                  />
+                </Grid>
 
-            {addCategory && subcatList.map((sub, index) => (
-              <Grid container spacing={1} key={index} sx={{ mt: 1 }}>
-                <Grid item xs={5}>
-                  <TextField
-                    fullWidth
-                    label={`Subcategory Name #${index + 1}`}
-                    variant="outlined"
-                    value={sub.name}
-                    onChange={(e) => {
-                      const updated = [...subcatList];
-                      updated[index].name = e.target.value;
-                      setSubcatList(updated);
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={5}>
-                  <TextField
-                    fullWidth
-                    label="Description"
-                    variant="outlined"
-                    value={sub.description}
-                    onChange={(e) => {
-                      const updated = [...subcatList];
-                      updated[index].description = e.target.value;
-                      setSubcatList(updated);
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={2}>
-                  <Button color="error" onClick={() => {
-                    const updated = subcatList.filter((_, i) => i !== index);
-                    setSubcatList(updated);
-                  }}>
-                    Delete
+                {subcatList.map((sub, index) => (
+                  <Grid container spacing={1} key={index} sx={{ mt: 1 }}>
+                    <Grid item xs={5}>
+                      <TextField
+                        fullWidth
+                        label={`Subcategory Name #${index + 1}`}
+                        value={sub.name}
+                        onChange={(e) => {
+                          const updated = [...subcatList];
+                          updated[index].name = e.target.value;
+                          setSubcatList(updated);
+                        }}
+                      />
+                    </Grid>
+                    <Grid item xs={5}>
+                      <TextField
+                        fullWidth
+                        label="Description"
+                        value={sub.description}
+                        onChange={(e) => {
+                          const updated = [...subcatList];
+                          updated[index].description = e.target.value;
+                          setSubcatList(updated);
+                        }}
+                      />
+                    </Grid>
+                    <Grid item xs={2}>
+                      <Button color="error" onClick={() => {
+                        setSubcatList(subcatList.filter((_, i) => i !== index));
+                      }}>
+                        Delete
+                      </Button>
+                    </Grid>
+                  </Grid>
+                ))}
+
+                <Grid item xs={12}>
+                  <Button variant="outlined" onClick={() => setSubcatList([...subcatList, { name: '', description: '' }])}>
+                    Add Subcategory
                   </Button>
                 </Grid>
-              </Grid>
-            ))}
-
-            {addCategory && (
-              <Grid item xs={12}>
-                <Button variant="outlined" onClick={() => setSubcatList([...subcatList, { name: '', description: '' }])}>
-                  Add Subcategory
-                </Button>
-              </Grid>
-            )}
-
-            {!addCategory && (
+              </>
+            ) : (
               <>
                 <Grid item xs={12}>
                   <TextField
                     fullWidth
                     label="Description"
-                    variant="outlined"
                     required
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
@@ -237,7 +223,6 @@ const ProductForm = ({ dataHandler, initialData, websites, addCategory }) => {
                   <TextField
                     fullWidth
                     label="Images (comma-separated)"
-                    variant="outlined"
                     required
                     value={images}
                     onChange={(e) => setImages(e.target.value)}
@@ -247,7 +232,6 @@ const ProductForm = ({ dataHandler, initialData, websites, addCategory }) => {
                   <TextField
                     fullWidth
                     label="Price"
-                    variant="outlined"
                     type="number"
                     required
                     value={price}
@@ -258,7 +242,6 @@ const ProductForm = ({ dataHandler, initialData, websites, addCategory }) => {
                   <TextField
                     fullWidth
                     label="Discount (%)"
-                    variant="outlined"
                     type="number"
                     value={discount}
                     onChange={(e) => setDiscount(Number(e.target.value))}
@@ -274,46 +257,74 @@ const ProductForm = ({ dataHandler, initialData, websites, addCategory }) => {
                       renderValue={(selected) => selected.join(', ')}
                     >
                       {[
-  // Frontend
-  'HTML', 'CSS', 'JavaScript', 'TypeScript', 'React', 'Next.js', 'Vue.js', 'Nuxt.js', 'Angular', 'Svelte', 'Tailwind CSS', 'Bootstrap', 'Material UI',
+  // ── Frontend ──
+  'HTML', 'CSS', 'SCSS', 'SASS', 'JavaScript', 'TypeScript',
+  'React', 'Next.js', 'Vue.js', 'Nuxt.js', 'Angular', 'Svelte',
+  'Tailwind CSS', 'Bootstrap', 'Material UI', 'Ant Design',
+  'Chakra UI', 'jQuery', 'Lit', 'Stencil', 'Alpine.js',
 
-  // Backend
-  'Node.js', 'Express.js', 'NestJS', 'Django', 'Flask', 'FastAPI', 'Ruby on Rails', 'Spring Boot', 'Laravel', 'PHP', 'ASP.NET Core', 'Koa.js', 'Go', 'Rust',
+  // ── Backend ──
+  'Node.js', 'Express.js', 'NestJS', 'Koa', 'Hapi',
+  'Django', 'Flask', 'FastAPI', 'Spring Boot', 'ASP.NET', 
+  'Laravel', 'Ruby on Rails', 'Phoenix (Elixir)', 'Go (Gin/Gorilla)', 
+  'Fiber (Go)', 'Actix (Rust)', 'Rocket (Rust)',
 
-  // Databases
-  'MySQL', 'PostgreSQL', 'MongoDB', 'SQLite', 'MariaDB', 'Firebase Realtime DB', 'Firestore', 'Oracle DB', 'Microsoft SQL Server', 'Redis', 'Cassandra', 'DynamoDB',
+  // ── Mobile / Cross-platform ──
+  'React Native', 'Flutter', 'Ionic', 'Cordova', 'Swift (iOS)',
+  'Kotlin (Android)', 'Java (Android)', 'Xamarin',
 
-  // Mobile Development
-  'React Native', 'Flutter', 'Swift', 'Kotlin', 'Java (Android)', 'Xamarin', 'Ionic', 'NativeScript',
+  // ── Databases ──
+  'MongoDB', 'MySQL', 'PostgreSQL', 'SQLite', 'Redis', 'Firebase Firestore',
+  'Realtime Database', 'Oracle DB', 'SQL Server', 'MariaDB', 'Cassandra',
+  'DynamoDB', 'Supabase', 'Neo4j', 'CouchDB', 'PlanetScale', 'SurrealDB',
 
-  // Cloud Platforms
-  'AWS', 'Azure', 'Google Cloud Platform (GCP)', 'Netlify', 'Vercel', 'Heroku', 'DigitalOcean',
+  // ── DevOps / Infra ──
+  'Docker', 'Kubernetes', 'Terraform', 'Ansible', 'Nginx', 'Apache',
+  'PM2', 'Vercel', 'Netlify', 'Heroku', 'AWS', 'GCP', 'Azure',
+  'Railway', 'Render', 'Cloudflare', 'GitHub Actions', 'GitLab CI', 'CircleCI',
+  'Jenkins', 'Travis CI',
 
-  // DevOps & Containerization
-  'Docker', 'Kubernetes', 'Terraform', 'Jenkins', 'GitHub Actions', 'GitLab CI/CD', 'CircleCI', 'Travis CI',
+  // ── APIs & Communication ──
+  'GraphQL', 'REST', 'tRPC', 'gRPC', 'Apollo Client', 'URQL',
+  'Axios', 'Fetch API', 'WebSockets', 'Socket.io', 'Pusher',
+  'Postman', 'Insomnia', 'Swagger', 'OpenAPI',
 
-  // APIs & Communication
-  'GraphQL', 'REST API', 'gRPC', 'WebSockets', 'Apollo Server', 'Apollo Client',
+  // ── Testing / QA ──
+  'Jest', 'Mocha', 'Chai', 'Cypress', 'Enzyme', 'Playwright',
+  'Vitest', 'Puppeteer', 'Testing Library', 'Karma', 'Supertest',
 
-  // Testing
-  'Jest', 'Mocha', 'Chai', 'Cypress', 'Playwright', 'Puppeteer', 'Enzyme', 'React Testing Library',
+  // ── Build Tools / Bundlers ──
+  'Webpack', 'Vite', 'Parcel', 'Rollup', 'esbuild', 'Babel',
 
-  // Auth & Security
-  'OAuth', 'JWT', 'Firebase Auth', 'Auth0', 'Passport.js', 'Okta',
+  // ── Linters / Formatters / Tools ──
+  'ESLint', 'Prettier', 'Husky', 'Lint-staged', 'Stylelint',
 
-  // CI/CD & Version Control
-  'Git', 'GitHub', 'GitLab', 'Bitbucket',
+  // ── Version Control & Collaboration ──
+  'Git', 'GitHub', 'GitLab', 'Bitbucket', 'SourceTree',
 
-  // Build Tools & Bundlers
-  'Webpack', 'Vite', 'Babel', 'Parcel', 'Rollup',
+  // ── Package Managers ──
+  'npm', 'Yarn', 'pnpm',
 
-  // Linters & Formatters
-  'ESLint', 'Prettier',
+  // ── State Management ──
+  'Redux', 'Zustand', 'Jotai', 'Recoil', 'MobX', 'Context API',
 
-  // Misc Tools & Platforms
-  'Nginx', 'Apache', 'Figma', 'Postman', 'Swagger', 'Socket.io'
-]
-.map((tech) => (
+  // ── Authentication / Security ──
+  'JWT', 'OAuth', 'NextAuth.js', 'Clerk', 'Auth0', 'Firebase Auth',
+  'Magic.link', 'bcrypt', 'Passport.js', 'Helmet.js',
+
+  // ── CMS / Headless ──
+  'Sanity', 'Strapi', 'Contentful', 'WordPress', 'Ghost', 'DatoCMS', 'Prismic',
+
+  // ── Analytics / Monitoring ──
+  'Google Analytics', 'Mixpanel', 'Hotjar', 'Sentry', 'LogRocket', 'PostHog',
+
+  // ── AI / ML / Data Tools ──
+  'TensorFlow.js', 'ONNX.js', 'LangChain', 'Pinecone', 'OpenAI API',
+
+  // ── Other / Utilities ──
+  'Framer Motion', 'Three.js', 'Chart.js', 'D3.js', 'Day.js', 'Moment.js',
+  'Lodash', 'RxJS', 'Immer', 'clsx', 'classnames', 'uuid', 'qs'
+].map((tech) => (
                         <MenuItem key={tech} value={tech}>
                           <Checkbox checked={technologies.includes(tech)} />
                           {tech}
@@ -347,7 +358,7 @@ const ProductForm = ({ dataHandler, initialData, websites, addCategory }) => {
                       value={subCategory}
                       onChange={(e) => setSubCategory(e.target.value)}
                     >
-                      {categories?.find((c) => c._id === category)?.subcat?.map((sub) => (
+                      {categories.find((c) => c._id === category)?.subcat?.map((sub) => (
                         <MenuItem key={sub._id} value={sub._id}>
                           {sub.name}
                         </MenuItem>
@@ -360,8 +371,8 @@ const ProductForm = ({ dataHandler, initialData, websites, addCategory }) => {
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose} color="secondary">Cancel</Button>
-          <Button onClick={handleSubmit} color="primary" variant="contained">Submit</Button>
+          <Button onClick={handleClose}>Cancel</Button>
+          <Button onClick={handleSubmit} variant="contained" color="primary">Submit</Button>
         </DialogActions>
       </Dialog>
 

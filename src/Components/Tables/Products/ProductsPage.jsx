@@ -26,6 +26,7 @@ import ProductDetail from './ProductDetail';
 import { DeleteForeverOutlined, Height } from '@mui/icons-material';
 import DeleteDialog from '../Website/DeleteDialog';
 import { useUser } from '../../../Context/UserContext';
+import { Link } from 'react-router-dom';
 
 const ProductsPage = () => {
     const [data, setData] = useState([]);
@@ -246,6 +247,12 @@ const [maxPrice, setMaxPrice] = useState('');
                 <Grid item xs={3}>
                     <ProductForm addCategory={true} categories={categories} websites={websites} dataHandler={fetchData} />
                 </Grid>
+                {user && (user.role === "admin" || user.role === "vendor") && (
+  <Grid item xs={3}>
+    <Link to="/product-categories"> <Button >View Cat</Button></Link>
+  </Grid>
+)}
+
             </Grid>
             <TableContainer component={Paper} sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', padding: '8px', p: 1 }}>
                 <Table sx={{ borderCollapse: 'collapse' }}>
