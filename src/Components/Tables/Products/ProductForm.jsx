@@ -114,6 +114,7 @@ const ProductForm = ({ dataHandler, initialData, websites, addCategory }) => {
       }
 
       setSnackbarSeverity('success');
+      resetForm(); 
       handleClose();
     } catch (error) {
       setSnackbarMessage('Failed to save data');
