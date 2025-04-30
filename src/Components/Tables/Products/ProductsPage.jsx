@@ -249,7 +249,7 @@ const [maxPrice, setMaxPrice] = useState('');
                 </Grid>
                 {user && (user.role === "admin" || user.role === "vendor") && (
   <Grid item xs={3}>
-    <Link to="/product-categories"> <Button >View Cat</Button></Link>
+    <Link to="/categories"> <Button >View Cat</Button></Link>
   </Grid>
 )}
 
