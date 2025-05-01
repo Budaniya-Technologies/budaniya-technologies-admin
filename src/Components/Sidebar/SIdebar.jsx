@@ -264,15 +264,7 @@ function Sidebar() {
     style={{ width: collapsed ? '60px' : '150px', marginTop: '15%' }}
     onError={() => setImageError(true)}
   />
-{/* ) : (
-  <div style={{ width: collapsed ? '60px' : '150px', marginTop: '15%' }}>
-    <img
-              src={logo}
-              alt="logo"
-              style={{ width: collapsed ? '60px' : '150px', marginTop: '15%' }}
-            />
-  </div>
-)} */}
+
 
           </div>
 
