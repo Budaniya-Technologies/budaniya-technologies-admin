@@ -266,6 +266,7 @@ const [maxPrice, setMaxPrice] = useState('');
                             <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', padding: '8px' }}><strong>Actual Amount</strong></TableCell>
                            
                             <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', padding: '8px' }}><strong>Category</strong></TableCell>
+                            <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', padding: '8px' }}><strong>Sub Category</strong></TableCell>
                             <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', padding: '8px' }}><strong>Actions</strong></TableCell>
                         </TableRow>
                     </TableHead>
@@ -307,6 +308,9 @@ const [maxPrice, setMaxPrice] = useState('');
                                     </TableCell>
                                     <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', padding: '8px' }}>
                                         {item.category?.name}
+                                    </TableCell>
+                                    <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', padding: '8px' }}>
+                                    {item.subcategory?.name || 'NA'}
                                     </TableCell>
                                     <TableCell sx={{ display: 'flex', border: '1px solid #ddd', whiteSpace: 'nowrap', padding: '8px' }}>
                                         <IconButton onClick={() => openDialog(item._id)}>

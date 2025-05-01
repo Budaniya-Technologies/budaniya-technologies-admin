@@ -18,7 +18,7 @@
 //   const [discount, setDiscount] = useState(0);
 //   const [referenceWebsite, setReferenceWebsite] = useState('');
 //   const [category, setCategory] = useState('');
-//   const [subCategory, setSubCategory] = useState('');
+//   const [subcat, setSubcat] = useState('');
 //   const [subcatList, setSubcatList] = useState([{ name: '', description: '' }]);
 //   const [snackbarOpen, setSnackbarOpen] = useState(false);
 //   const [snackbarMessage, setSnackbarMessage] = useState('');
@@ -29,6 +29,8 @@
 //   const [specification, setSpecification] = useState('');
 //   const { user, categories, setCategories } = useUser();
 
+
+  
 //   useEffect(() => {
 //     if (initialData) {
 //       setProductName(initialData.productName || '');
@@ -36,15 +38,11 @@
 //       setImages(initialData.images?.join(', ') || '');
 //       setPrice(initialData.price || 0);
 //       setTechnologies(Array.isArray(initialData.technologies) ? initialData.technologies : []);
-
 //       setDiscount(initialData.discount || 0);
 //       setReferenceWebsite(initialData.referenceWebsite || '');
-//       setCategory(initialData?.category?._id || initialData?.category || '');
-//       setSubCategory(
-//         typeof initialData?.subcat === 'object'
-//           ? initialData?.subcat?._id
-//           : initialData?.subcat || ''
-//       );
+//       setCategory(initialData.category?._id || initialData.category || '');
+//       setSubcat(initialData.subcategory?._id || initialData.subcategory || '');
+
 //       setOverview(initialData.overview || '');
 //       setSupport(initialData.support || '');
 //       setReviews(initialData.reviews || '');
@@ -69,7 +67,7 @@
 //     setDiscount(0);
 //     setReferenceWebsite('');
 //     setCategory('');
-//     setSubCategory('');
+//     setSubcat('');
 //     setSubcatList([{ name: '', description: '' }]);
 //     setOverview('');
 //     setSupport('');
@@ -79,7 +77,7 @@
 
 //   const handleSubmit = async () => {
 //     const missingFields = !addCategory &&
-//       (!productName || !description || !images || !price || !referenceWebsite || !category);
+//       (!productName || !description || !images || !price || !referenceWebsite || !category  ||!subcat);
 
 //     if ((missingFields) || (addCategory && !productName)) {
 //       setSnackbarMessage('Please fill all required fields');
@@ -98,13 +96,12 @@
 //       discount,
 //       referenceWebsite,
 //       category,
-//       subcat: subCategory,
+//       subcat,
 //       overview,
 //       support,
 //       reviews,
 //       specification,
 //     };
-   
 
 //     const newCategory = {
 //       name: productName,
@@ -118,7 +115,7 @@
 //         const { data } = await apiPost('api/categories', newCategory);
 //         setCategories((prev) => [...prev, data.category]);
 //         setSnackbarMessage('Category created successfully');
-//         resetForm(); 
+//         resetForm();
 //       } else {
 //         const response = initialData
 //           ? await apiPut(`api/product/products/${initialData._id}`, newProduct)
@@ -131,7 +128,7 @@
 //       }
 
 //       setSnackbarSeverity('success');
-//       resetForm(); 
+//       resetForm();
 //       handleClose();
 //     } catch (error) {
 //       setSnackbarMessage('Failed to save data');
@@ -178,12 +175,10 @@
 //                   <TextField
 //                     fullWidth
 //                     label="Category Description"
-//                     variant="outlined"
 //                     value={description}
 //                     onChange={(e) => setDescription(e.target.value)}
 //                   />
 //                 </Grid>
-
 //                 {subcatList.map((sub, index) => (
 //                   <Grid container spacing={1} key={index} sx={{ mt: 1 }}>
 //                     <Grid item xs={5}>
@@ -219,7 +214,6 @@
 //                     </Grid>
 //                   </Grid>
 //                 ))}
-
 //                 <Grid item xs={12}>
 //                   <Button variant="outlined" onClick={() => setSubcatList([...subcatList, { name: '', description: '' }])}>
 //                     Add Subcategory
@@ -274,82 +268,11 @@
 //                       onChange={(e) => setTechnologies(e.target.value)}
 //                       renderValue={(selected) => selected.join(', ')}
 //                     >
-//                       <Select
-//   multiple
-//   value={Array.isArray(technologies) ? technologies : []}
-//   onChange={(e) => setTechnologies(e.target.value)}
-//   renderValue={(selected) => Array.isArray(selected) ? selected.join(', ') : ''}
-// />
-
 //                       {[
-//   // ── Frontend ──
-//   'HTML', 'CSS', 'SCSS', 'SASS', 'JavaScript', 'TypeScript',
-//   'React', 'Next.js', 'Vue.js', 'Nuxt.js', 'Angular', 'Svelte',
-//   'Tailwind CSS', 'Bootstrap', 'Material UI', 'Ant Design',
-//   'Chakra UI', 'jQuery', 'Lit', 'Stencil', 'Alpine.js',
-
-//   // ── Backend ──
-//   'Node.js', 'Express.js', 'NestJS', 'Koa', 'Hapi',
-//   'Django', 'Flask', 'FastAPI', 'Spring Boot', 'ASP.NET', 
-//   'Laravel', 'Ruby on Rails', 'Phoenix (Elixir)', 'Go (Gin/Gorilla)', 
-//   'Fiber (Go)', 'Actix (Rust)', 'Rocket (Rust)',
-
-//   // ── Mobile / Cross-platform ──
-//   'React Native', 'Flutter', 'Ionic', 'Cordova', 'Swift (iOS)',
-//   'Kotlin (Android)', 'Java (Android)', 'Xamarin',
-
-//   // ── Databases ──
-//   'MongoDB', 'MySQL', 'PostgreSQL', 'SQLite', 'Redis', 'Firebase Firestore',
-//   'Realtime Database', 'Oracle DB', 'SQL Server', 'MariaDB', 'Cassandra',
-//   'DynamoDB', 'Supabase', 'Neo4j', 'CouchDB', 'PlanetScale', 'SurrealDB',
-
-//   // ── DevOps / Infra ──
-//   'Docker', 'Kubernetes', 'Terraform', 'Ansible', 'Nginx', 'Apache',
-//   'PM2', 'Vercel', 'Netlify', 'Heroku', 'AWS', 'GCP', 'Azure',
-//   'Railway', 'Render', 'Cloudflare', 'GitHub Actions', 'GitLab CI', 'CircleCI',
-//   'Jenkins', 'Travis CI',
-
-//   // ── APIs & Communication ──
-//   'GraphQL', 'REST', 'tRPC', 'gRPC', 'Apollo Client', 'URQL',
-//   'Axios', 'Fetch API', 'WebSockets', 'Socket.io', 'Pusher',
-//   'Postman', 'Insomnia', 'Swagger', 'OpenAPI',
-
-//   // ── Testing / QA ──
-//   'Jest', 'Mocha', 'Chai', 'Cypress', 'Enzyme', 'Playwright',
-//   'Vitest', 'Puppeteer', 'Testing Library', 'Karma', 'Supertest',
-
-//   // ── Build Tools / Bundlers ──
-//   'Webpack', 'Vite', 'Parcel', 'Rollup', 'esbuild', 'Babel',
-
-//   // ── Linters / Formatters / Tools ──
-//   'ESLint', 'Prettier', 'Husky', 'Lint-staged', 'Stylelint',
-
-//   // ── Version Control & Collaboration ──
-//   'Git', 'GitHub', 'GitLab', 'Bitbucket', 'SourceTree',
-
-//   // ── Package Managers ──
-//   'npm', 'Yarn', 'pnpm',
-
-//   // ── State Management ──
-//   'Redux', 'Zustand', 'Jotai', 'Recoil', 'MobX', 'Context API',
-
-//   // ── Authentication / Security ──
-//   'JWT', 'OAuth', 'NextAuth.js', 'Clerk', 'Auth0', 'Firebase Auth',
-//   'Magic.link', 'bcrypt', 'Passport.js', 'Helmet.js',
-
-//   // ── CMS / Headless ──
-//   'Sanity', 'Strapi', 'Contentful', 'WordPress', 'Ghost', 'DatoCMS', 'Prismic',
-
-//   // ── Analytics / Monitoring ──
-//   'Google Analytics', 'Mixpanel', 'Hotjar', 'Sentry', 'LogRocket', 'PostHog',
-
-//   // ── AI / ML / Data Tools ──
-//   'TensorFlow.js', 'ONNX.js', 'LangChain', 'Pinecone', 'OpenAI API',
-
-//   // ── Other / Utilities ──
-//   'Framer Motion', 'Three.js', 'Chart.js', 'D3.js', 'Day.js', 'Moment.js',
-//   'Lodash', 'RxJS', 'Immer', 'clsx', 'classnames', 'uuid', 'qs'
-// ].map((tech) => (
+//                         'HTML', 'CSS', 'JavaScript', 'React', 'Node.js', 'MongoDB',
+//                         'Next.js', 'Firebase', 'Tailwind CSS', 'Redux', 'JWT',
+//                         'Express.js', 'Docker', 'Vercel', 'AWS', 'GraphQL'
+//                       ].map((tech) => (
 //                         <MenuItem key={tech} value={tech}>
 //                           <Checkbox checked={technologies.includes(tech)} />
 //                           {tech}
@@ -365,7 +288,7 @@
 //                       value={category}
 //                       onChange={(e) => {
 //                         setCategory(e.target.value);
-//                         setSubCategory('');
+//                         setSubcat('');
 //                       }}
 //                     >
 //                       {categories?.map((cat) => (
@@ -380,11 +303,11 @@
 //                   <FormControl fullWidth>
 //                     <InputLabel>Sub Category</InputLabel>
 //                     <Select
-//                       value={subCategory}
-//                       onChange={(e) => setSubCategory(e.target.value)}
+//                       value={subcat}
+//                       onChange={(e) => setSubcat(e.target.value)}
 //                     >
 //                       {categories.find((c) => c._id === category)?.subcat?.map((sub) => (
-//                         <MenuItem key={sub._id} value={sub._id}>
+//                         <MenuItem key={sub._id} value={sub?._id}>
 //                           {sub.name}
 //                         </MenuItem>
 //                       ))}
@@ -454,15 +377,80 @@
 // export default ProductForm;
 
 
+
 import { useEffect, useState } from 'react';
 import {
   Dialog, Checkbox, FormControlLabel, DialogActions, DialogContent,
   DialogTitle, Button, TextField, Grid, Snackbar, SnackbarContent,
   MenuItem, Select, InputLabel, FormControl, IconButton
 } from '@mui/material';
-import { apiGet, apiPost, apiPut } from '../../../api/apiMethods';
+import { apiPost, apiPut } from '../../../api/apiMethods';
 import { EditNoteOutlined } from '@mui/icons-material';
 import { useUser } from '../../../Context/UserContext';
+
+
+const technologyOptions = [
+  // Programming Languages
+  'HTML', 'CSS', 'JavaScript', 'TypeScript', 'Python', 'Java', 'C', 'C++', 'C#', 'Go', 'Ruby', 'PHP', 'Rust', 'Swift', 'Kotlin', 'Dart',
+
+  // Frontend Frameworks/Libraries
+  'React', 'Next.js', 'Vue.js', 'Nuxt.js', 'Angular', 'Svelte', 'Alpine.js', 'Preact', 'Gatsby', 'SolidJS',
+
+  // Styling
+  'Tailwind CSS', 'Bootstrap', 'Material UI', 'Chakra UI', 'Bulma', 'Sass', 'SCSS', 'Less', 'Styled Components', 'Emotion',
+
+  // Backend Frameworks
+  'Node.js', 'Express.js', 'NestJS', 'Django', 'Flask', 'Ruby on Rails', 'Laravel', 'Spring Boot', 'ASP.NET', 'Koa', 'Hapi',
+
+  // Mobile Development
+  'React Native', 'Flutter', 'SwiftUI', 'Xamarin', 'Kotlin Multiplatform', 'Ionic', 'NativeScript',
+
+  // Databases
+  'MongoDB', 'MySQL', 'PostgreSQL', 'SQLite', 'Redis', 'Oracle', 'Microsoft SQL Server', 'MariaDB', 'Firebase Firestore', 'Cassandra', 'Neo4j', 'Supabase', 'DynamoDB', 'FaunaDB',
+
+  // Cloud Platforms
+  'AWS', 'Google Cloud', 'Microsoft Azure', 'Heroku', 'Vercel', 'Netlify', 'DigitalOcean', 'Firebase', 'Render', 'Railway',
+
+  // DevOps & CI/CD
+  'Docker', 'Kubernetes', 'GitHub Actions', 'GitLab CI', 'CircleCI', 'Jenkins', 'Travis CI', 'Ansible', 'Terraform', 'Pulumi',
+
+  // Authentication & Security
+  'JWT', 'OAuth2', 'Firebase Auth', 'Auth0', 'Clerk', 'SuperTokens', 'Passport.js', 'Bcrypt', 'Keycloak',
+
+  // APIs & Integration
+  'REST API', 'GraphQL', 'gRPC', 'tRPC', 'WebSockets', 'Apollo Client', 'Axios', 'Fetch API', 'Postman', 'Insomnia',
+
+  // CMS & Headless CMS
+  'WordPress', 'Strapi', 'Sanity', 'Contentful', 'Ghost', 'Prismic', 'DatoCMS', 'Directus', 'KeystoneJS',
+
+  // State Management
+  'Redux', 'MobX', 'Recoil', 'Zustand', 'Jotai', 'Context API', 'XState', 'React Query', 'SWR',
+
+  // Testing Libraries & Tools
+  'Jest', 'Mocha', 'Chai', 'Cypress', 'Playwright', 'Puppeteer', 'Vitest', 'Testing Library', 'Postman',
+
+  // AI/ML Tools & Frameworks
+  'TensorFlow', 'PyTorch', 'scikit-learn', 'Keras', 'OpenCV', 'Pandas', 'NumPy', 'Matplotlib', 'LangChain', 'Transformers', 'HuggingFace', 'OpenAI API',
+
+  // Blockchain
+  'Solidity', 'Hardhat', 'Truffle', 'Web3.js', 'Ethers.js', 'IPFS', 'Moralis', 'Alchemy', 'Infura', 'Metamask',
+
+  // Build Tools & Bundlers
+  'Webpack', 'Vite', 'Parcel', 'Rollup', 'Babel', 'ESBuild',
+
+  // Linters, Formatters & Utilities
+  'ESLint', 'Prettier', 'Husky', 'Lint-staged', 'EditorConfig',
+
+  // Version Control & Project Tools
+  'Git', 'GitHub', 'GitLab', 'Bitbucket', 'npm', 'yarn', 'pnpm', 'TurboRepo', 'Nx', 'Lerna',
+
+  // Animation & Design
+  'Framer Motion', 'GSAP', 'Three.js', 'Lottie', 'Figma', 'Adobe XD', 'Canva',
+
+  // Others
+  'OpenAI', 'Firebase Realtime DB', 'Stripe', 'PayPal', 'Twilio', 'SendGrid', 'Nodemailer', 'Socket.IO', 'Cloudinary', 'ImageKit',
+];
+
 
 const ProductForm = ({ dataHandler, initialData, websites, addCategory }) => {
   const [open, setOpen] = useState(false);
@@ -495,7 +483,7 @@ const ProductForm = ({ dataHandler, initialData, websites, addCategory }) => {
       setDiscount(initialData.discount || 0);
       setReferenceWebsite(initialData.referenceWebsite || '');
       setCategory(initialData.category?._id || initialData.category || '');
-      setSubcat(initialData.subcat?._id || initialData.subcat || '');
+      setSubcat(initialData.subcategory?._id || initialData.subcategory || '');
       setOverview(initialData.overview || '');
       setSupport(initialData.support || '');
       setReviews(initialData.reviews || '');
@@ -530,7 +518,7 @@ const ProductForm = ({ dataHandler, initialData, websites, addCategory }) => {
 
   const handleSubmit = async () => {
     const missingFields = !addCategory &&
-      (!productName || !description || !images || !price || !referenceWebsite || !category  ||!subcat);
+      (!productName || !description || !images || !price || !referenceWebsite || !category || !subcat);
 
     if ((missingFields) || (addCategory && !productName)) {
       setSnackbarMessage('Please fill all required fields');
@@ -594,6 +582,8 @@ const ProductForm = ({ dataHandler, initialData, websites, addCategory }) => {
   const handleClickOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const handleSnackbarClose = () => setSnackbarOpen(false);
+
+  const selectedTechnologies = Array.isArray(technologies) ? technologies : [];
 
   return (
     <div>
@@ -717,17 +707,13 @@ const ProductForm = ({ dataHandler, initialData, websites, addCategory }) => {
                     <InputLabel>Technologies</InputLabel>
                     <Select
                       multiple
-                      value={technologies}
+                      value={selectedTechnologies}
                       onChange={(e) => setTechnologies(e.target.value)}
-                      renderValue={(selected) => selected.join(', ')}
+                      renderValue={(selected) => Array.isArray(selected) ? selected.join(', ') : ''}
                     >
-                      {[
-                        'HTML', 'CSS', 'JavaScript', 'React', 'Node.js', 'MongoDB',
-                        'Next.js', 'Firebase', 'Tailwind CSS', 'Redux', 'JWT',
-                        'Express.js', 'Docker', 'Vercel', 'AWS', 'GraphQL'
-                      ].map((tech) => (
+                      {technologyOptions.map((tech) => (
                         <MenuItem key={tech} value={tech}>
-                          <Checkbox checked={technologies.includes(tech)} />
+                          <Checkbox checked={selectedTechnologies.includes(tech)} />
                           {tech}
                         </MenuItem>
                       ))}
@@ -741,7 +727,7 @@ const ProductForm = ({ dataHandler, initialData, websites, addCategory }) => {
                       value={category}
                       onChange={(e) => {
                         setCategory(e.target.value);
-                        setSubcategory('');
+                        setSubcat('');
                       }}
                     >
                       {categories?.map((cat) => (
