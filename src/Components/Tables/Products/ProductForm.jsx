@@ -7,6 +7,8 @@ import {
 import { apiPost, apiPut } from '../../../api/apiMethods';
 import { EditNoteOutlined } from '@mui/icons-material';
 import { useUser } from '../../../Context/UserContext';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 
 const technologyOptions = [
@@ -374,45 +376,24 @@ const ProductForm = ({ dataHandler, initialData, websites, addCategory }) => {
                   </FormControl>
                 </Grid>
                 <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Overview"
-                    multiline
-                    rows={3}
-                    value={overview}
-                    onChange={(e) => setOverview(e.target.value)}
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Support"
-                    multiline
-                    rows={2}
-                    value={support}
-                    onChange={(e) => setSupport(e.target.value)}
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Reviews"
-                    multiline
-                    rows={2}
-                    value={reviews}
-                    onChange={(e) => setReviews(e.target.value)}
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Specification"
-                    multiline
-                    rows={2}
-                    value={specification}
-                    onChange={(e) => setSpecification(e.target.value)}
-                  />
-                </Grid>
+  <label>Overview</label>
+  <ReactQuill value={overview} onChange={setOverview} />
+</Grid>
+
+<Grid item xs={12}>
+  <label>Support</label>
+  <ReactQuill value={support} onChange={setSupport} />
+</Grid>
+
+<Grid item xs={12}>
+  <label>Reviews</label>
+  <ReactQuill value={reviews} onChange={setReviews} />
+</Grid>
+
+<Grid item xs={12}>
+  <label>Specification</label>
+  <ReactQuill value={specification} onChange={setSpecification} />
+</Grid>
               </>
             )}
           </Grid>
