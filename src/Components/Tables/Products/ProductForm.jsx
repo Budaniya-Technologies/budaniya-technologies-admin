@@ -7,8 +7,7 @@ import {
 import { apiPost, apiPut } from '../../../api/apiMethods';
 import { EditNoteOutlined } from '@mui/icons-material';
 import { useUser } from '../../../Context/UserContext';
-import ReactQuill from 'react-quill';
-// import 'react-quill/dist/quill.snow.css';
+
 import { Editor } from '@tinymce/tinymce-react';
 
 
@@ -378,8 +377,7 @@ const ProductForm = ({ dataHandler, initialData, websites, addCategory }) => {
                 </Grid>
   <Grid item xs={12}>
   <InputLabel>Overview</InputLabel>
-  {/* <ReactQuill value={overview} onChange={setOverview} />
-  <div dangerouslySetInnerHTML={{ __html: overview }} /> */}
+
   <Editor
   apiKey="9hwkdf2guo2dkedb9p0duy3yyl5qsrvlbiw0f24ekypxkha9"
   value={overview}
@@ -405,8 +403,7 @@ const ProductForm = ({ dataHandler, initialData, websites, addCategory }) => {
 
 <Grid item xs={12}>
   <label>Support</label>
-  {/* <ReactQuill value={support} onChange={setSupport} />
-  <div dangerouslySetInnerHTML={{ __html: support }} /> */}
+
   <Editor
   apiKey="9hwkdf2guo2dkedb9p0duy3yyl5qsrvlbiw0f24ekypxkha9"
   value={support}
@@ -431,8 +428,7 @@ const ProductForm = ({ dataHandler, initialData, websites, addCategory }) => {
 
 <Grid item xs={12}>
   <label>Reviews</label>
-  {/* <ReactQuill value={reviews} onChange={setReviews} />
-  <div dangerouslySetInnerHTML={{ __html: reviews }} /> */}
+
   <Editor
   apiKey="9hwkdf2guo2dkedb9p0duy3yyl5qsrvlbiw0f24ekypxkha9"
   value={reviews}
@@ -457,8 +453,7 @@ const ProductForm = ({ dataHandler, initialData, websites, addCategory }) => {
 
 <Grid item xs={12}>
   <label>Specification</label>
-  {/* <ReactQuill value={specification} onChange={setSpecification} />
-  <div dangerouslySetInnerHTML={{ __html: specification }} /> */}
+
   <Editor
   apiKey="9hwkdf2guo2dkedb9p0duy3yyl5qsrvlbiw0f24ekypxkha9"
   value={specification}
